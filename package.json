@@ -7,7 +7,10 @@
     "build": "remix build",
     "dev": "remix dev --manual",
     "start": "remix-serve ./build/index.js",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "migration:gen": "drizzle-kit generate:sqlite",
+    "migration:apply": "drizzle-kit push:sqlite",
+    "studio": "drizzle-kit studio --port 3333"
   },
   "dependencies": {
     "@conform-to/react": "^0.9.0",
@@ -17,6 +20,10 @@
     "@remix-run/node": "^2.2.0",
     "@remix-run/react": "^2.2.0",
     "@remix-run/serve": "^2.2.0",
+    "@types/better-sqlite3": "^7.6.6",
+    "better-sqlite3": "^9.0.0",
+    "drizzle-kit": "^0.19.13",
+    "drizzle-orm": "^0.28.6",
     "framer-motion": "^10.16.4",
     "isbot": "^3.6.8",
     "react": "^18.2.0",

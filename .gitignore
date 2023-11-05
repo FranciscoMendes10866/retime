@@ -4,3 +4,6 @@ node_modules
 /build
 /public/build
 .env
+
+local.db
+/app/db/migrations
