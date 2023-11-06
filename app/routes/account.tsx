@@ -6,6 +6,8 @@ import { parse } from "@conform-to/zod";
 import { z } from "zod";
 import { Button, Input } from "@nextui-org/react";
 
+import { createAccount } from "~/services/user.server";
+
 export const meta: MetaFunction = () => [
   { title: "retime" },
   { name: "description", content: "Join the group!" },
@@ -23,7 +25,15 @@ export async function action({ request }: ActionFunctionArgs) {
     return json(submission);
   }
 
-  return redirect(`/main/${submission.value.username}`);
+  try {
+    const userId = await createAccount(submission.value.username);
+    return redirect(`/main/${userId}`);
+  } catch (cause) {
+    if (cause instanceof Error) {
+      submission.error.username = [cause.message];
+    }
+    return json(submission);
+  }
 }
 
 export default function Index() {
