@@ -1,3 +1,5 @@
+import { parse } from "@conform-to/zod";
+import { useForm } from "@conform-to/react";
 import {
   Avatar,
   Button,
@@ -6,33 +8,82 @@ import {
   CardHeader,
   Textarea,
 } from "@nextui-org/react";
-import { type LoaderFunctionArgs, json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { json } from "@remix-run/node";
+import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
+import { Form, useActionData } from "@remix-run/react";
 import { useState } from "react";
+import { z } from "zod";
+
+import { createNewThread, getFeedThreads } from "~/services/thread.server";
+
+const schema = z.object({
+  body: z.string().min(6, "must have at least 6 chars long"),
+});
 
 export async function loader({ params }: LoaderFunctionArgs) {
-  return json({ userId: params["userId"] });
+  try {
+    const result = await getFeedThreads(Number(params["userId"]));
+    return json(result);
+  } catch {
+    // ...
+  }
+  return null;
+}
+
+export async function action({ request, params }: ActionFunctionArgs) {
+  const formData = await request.formData();
+  const submission = parse(formData, { schema });
+
+  if (submission.intent !== "submit" || !submission.value) {
+    return json(submission);
+  }
+
+  try {
+    await createNewThread({
+      userId: Number(params["userId"]),
+      body: submission.value.body,
+    });
+  } catch {
+    // ...
+  }
+
+  return null;
 }
 
 export default function Feed() {
-  const result = useLoaderData<typeof loader>();
+  // const list = useLoaderData<typeof loader>()
+  const lastSubmission = useActionData<typeof action>();
+
+  const [form, fields] = useForm<z.infer<typeof schema>>({
+    ...(lastSubmission ? { lastSubmission } : {}),
+    shouldValidate: "onBlur",
+  });
+
   const [isFollowed, setIsFollowed] = useState(false);
 
   return (
     <section className="h-screen w-screen flex">
       <span className="w-4/12" />
       <div className="w-5/12 space-y-3 px-2">
-        <div className="w-full pb-4 mt-6 flex flex-col space-y-3 border-b">
+        <Form
+          className="w-full pb-4 mt-6 flex flex-col space-y-3 border-b"
+          method="POST"
+          {...form.props}
+        >
           <Textarea
+            name="body"
             label="Thread"
             placeholder="Type here anything that comes to your mind..."
             variant="bordered"
             color="primary"
+            isInvalid={!!fields.body.error}
+            defaultValue={fields.body.defaultValue}
+            errorMessage={fields.body.error}
           />
-          <Button color="primary" variant="light" fullWidth isDisabled>
+          <Button color="primary" variant="light" fullWidth type="submit">
             Send Now
           </Button>
-        </div>
+        </Form>
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((elm, index) => (
           <Card
             className="w-full border-b"
