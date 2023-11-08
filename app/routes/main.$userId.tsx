@@ -10,8 +10,12 @@ import {
 } from "@nextui-org/react";
 import { json } from "@remix-run/node";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
-import { Form, useActionData } from "@remix-run/react";
-import { useState } from "react";
+import {
+  Form,
+  useActionData,
+  useLoaderData,
+  useSubmit,
+} from "@remix-run/react";
 import { z } from "zod";
 
 import { createNewThread, getFeedThreads } from "~/services/thread.server";
@@ -22,8 +26,10 @@ const schema = z.object({
 
 export async function loader({ params }: LoaderFunctionArgs) {
   try {
-    const result = await getFeedThreads(Number(params["userId"]));
-    return json(result);
+    const userId = Number(params["userId"]);
+
+    const result = await getFeedThreads(userId);
+    return json({ userId, list: result });
   } catch {
     // ...
   }
@@ -51,15 +57,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
 }
 
 export default function Feed() {
-  // const list = useLoaderData<typeof loader>()
+  const result = useLoaderData<typeof loader>();
   const lastSubmission = useActionData<typeof action>();
+  const submit = useSubmit();
 
   const [form, fields] = useForm<z.infer<typeof schema>>({
     ...(lastSubmission ? { lastSubmission } : {}),
     shouldValidate: "onBlur",
   });
-
-  const [isFollowed, setIsFollowed] = useState(false);
 
   return (
     <section className="h-screen w-screen flex">
@@ -84,7 +89,7 @@ export default function Feed() {
             Send Now
           </Button>
         </Form>
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((elm, index) => (
+        {result?.list?.map((item, index) => (
           <Card
             className="w-full border-b"
             key={index}
@@ -96,39 +101,40 @@ export default function Feed() {
                 <Avatar isBordered radius="md" size="md" src="/dango.png" />
                 <div className="flex flex-col gap-1 items-start justify-center">
                   <h4 className="text-small font-semibold leading-none text-default-600">
-                    Zoey Lang
+                    {item.user.username}
                   </h4>
                   <h5 className="text-small tracking-tight text-default-400">
-                    @zoeylang
+                    @{item.user.username.toLowerCase()}
                   </h5>
                 </div>
               </div>
               <Button
                 className={
-                  isFollowed
+                  true
                     ? "bg-transparent text-foreground border-default-200"
                     : ""
                 }
                 color="primary"
                 radius="full"
                 size="sm"
-                variant={isFollowed ? "bordered" : "solid"}
-                onPress={() => setIsFollowed(!isFollowed)}
+                variant={true ? "bordered" : "solid"}
+                onClick={(evt) => {
+                  evt.stopPropagation();
+                  const formData = new FormData();
+                  formData.append("followerId", result.userId.toString());
+                  formData.append("followedId", item.id.toString());
+                  submit(formData, {
+                    method: "POST",
+                    action: "/api/follow",
+                    replace: false,
+                  });
+                }}
               >
-                {isFollowed ? "Unfollow" : "Follow"}
+                {true ? "Unfollow" : "Follow"}
               </Button>
             </CardHeader>
             <CardBody className="px-3 mb-6 text-small text-default-400">
-              <p>
-                Frontend developer and UI/UX enthusiast. Join me on this coding
-                adventure!
-              </p>
-              <span className="pt-2">
-                #FrontendWithZoey
-                <span className="py-2" aria-label="computer" role="img">
-                  💻
-                </span>
-              </span>
+              <p>{item.body}</p>
             </CardBody>
           </Card>
         ))}

@@ -1,3 +1,6 @@
+import { createInsertSchema } from "drizzle-zod";
+import type { z } from "zod";
+
 import { db } from "~/db/client";
 import { threads } from "~/db/schema";
 
@@ -27,19 +30,29 @@ export async function getFeedThreads(userId: number) {
   });
 }
 
-interface CreateNewThreadArgs {
-  userId: number;
-  body: string;
-}
+export const threadInsertSchema = createInsertSchema(threads);
+
+type CreateNewThreadArgs = Pick<
+  z.infer<typeof threadInsertSchema>,
+  "body" | "userId"
+>;
 
 export async function createNewThread(data: CreateNewThreadArgs) {
-  const result = await db.insert(threads).values({
+  const parsed = threadInsertSchema.safeParse({
     ...data,
     createdAt: new Date(),
   });
+
+  if (!parsed.success) {
+    throw Error("An error has occurred.");
+  }
+
+  const result = await db.insert(threads).values(parsed.data);
 
   const rowId = result.lastInsertRowid;
   if (rowId < 1 || typeof rowId !== "number") {
     throw Error("An error has occurred.");
   }
+
+  return;
 }
