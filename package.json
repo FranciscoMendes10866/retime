@@ -26,7 +26,6 @@
     "drizzle-orm": "^0.28.6",
     "drizzle-zod": "^0.5.1",
     "framer-motion": "^10.16.4",
-    "install": "^0.13.0",
     "isbot": "^3.6.8",
     "lucide-react": "^0.292.0",
     "npm": "^10.2.3",
