@@ -21,11 +21,7 @@ export async function getFeedThreads(userId: number) {
       and(inArray(thread.userId, ids), gte(thread.createdAt, date)),
     limit: 40,
     with: {
-      user: {
-        columns: {
-          username: true,
-        },
-      },
+      user: true,
     },
   });
 }
