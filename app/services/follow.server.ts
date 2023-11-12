@@ -35,3 +35,24 @@ export async function followEntryHandler(datums: FollowEntryHandlerArgs) {
 
   return;
 }
+
+export async function getFollowing(userId: number) {
+  const following = await db.query.follows.findMany({
+    where: (follow, { eq }) => eq(follow.followerId, userId),
+    columns: {
+      followedId: true,
+    },
+  });
+
+  return following.map((item) => item.followedId);
+}
+
+export async function getFollowRecomendations(userId: number) {
+  const ids = await getFollowing(userId);
+  ids.push(userId);
+
+  return await db.query.users.findMany({
+    where: (user, { notInArray }) => notInArray(user.id, ids),
+    limit: 12,
+  });
+}

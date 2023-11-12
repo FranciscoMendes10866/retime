@@ -3,22 +3,19 @@ import type { z } from "zod";
 
 import { db } from "~/db/client";
 import { threads } from "~/db/schema";
+import { getFollowing } from "./follow.server";
 
 export async function getFeedThreads(userId: number) {
-  const following = await db.query.follows.findMany({
-    where: (follow, { eq }) => eq(follow.followerId, userId),
-    columns: {
-      followedId: true,
-    },
-  });
+  const ids = await getFollowing(userId);
+  ids.push(userId);
 
-  const ids = following.map((item) => item.followedId);
   var date = new Date();
-  date.setDate(date.getDate() - 7);
+  date.setDate(date.getDate() - 5);
 
   return await db.query.threads.findMany({
-    where: (thread, { inArray, and, gte }) =>
+    where: (thread, { and, inArray, gte }) =>
       and(inArray(thread.userId, ids), gte(thread.createdAt, date)),
+    orderBy: (column, { desc }) => desc(column.createdAt),
     limit: 40,
     with: {
       user: true,

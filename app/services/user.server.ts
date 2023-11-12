@@ -1,5 +1,11 @@
+import { createInsertSchema } from "drizzle-zod";
+import type { z } from "zod";
+
 import { db } from "~/db/client";
 import { users } from "~/db/schema";
+
+export const userInsertSchema = createInsertSchema(users);
+export type User = z.infer<typeof userInsertSchema>;
 
 export async function createAccount(username: string): Promise<number> {
   const user = await db.query.users.findFirst({
