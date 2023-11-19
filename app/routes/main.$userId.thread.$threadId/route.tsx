@@ -8,6 +8,7 @@ import ThreadItem from "~/components/ThreadItem";
 
 import { getThreadById } from "~/services/thread.server";
 import { createReply, replyInsertSchema } from "~/services/comment.server";
+import { createCommentNotification } from "~/services/notification.server";
 import { timeAgo } from "~/utils/timeAgo";
 
 export async function loader({ params }: LoaderFunctionArgs) {
@@ -29,11 +30,21 @@ export async function action({ request }: ActionFunctionArgs) {
     map[key] = Number(value);
   }
 
+  const { threadAuthorId, ...rest } = map;
+
   const datums = await replyInsertSchema.parseAsync({
-    ...map,
+    ...rest,
     createdAt: new Date(),
   });
+
   await createReply(datums);
+
+  if (typeof threadAuthorId === "number") {
+    await createCommentNotification({
+      actorId: threadAuthorId,
+      threadId: datums.threadId,
+    });
+  }
 
   return new Response("OK", { status: 200 });
 }
@@ -64,6 +75,7 @@ export default function Page() {
       <Form method="POST">
         <input type="hidden" name="userId" value={userId} />
         <input type="hidden" name="threadId" value={threadId} />
+        <input type="hidden" name="threadAuthorId" value={thread?.user.id} />
         <Input
           name="body"
           placeholder="Leave a comment here..."
@@ -74,12 +86,19 @@ export default function Page() {
 
       <div className="space-y-2">
         {thread?.replies.map((reply) => (
-          <div key={reply.id} className="py-4 border-b border-b-gray-100 flex items-center justify-between">
+          <div
+            key={reply.id}
+            className="py-4 border-b border-b-gray-100 flex items-center justify-between"
+          >
             <div className="flex items-center space-x-2">
-              <p className="text-gray-600 text-sm">@{reply.user.username.toLowerCase()}</p>
+              <p className="text-gray-600 text-sm">
+                @{reply.user.username.toLowerCase()}
+              </p>
               <h3 className="text-gray-800 text-sm">{reply.body}</h3>
             </div>
-            <time className="text-sm text-gray-600">{timeAgo(reply.createdAt)}</time>
+            <time className="text-sm text-gray-600">
+              {timeAgo(reply.createdAt)}
+            </time>
           </div>
         ))}
       </div>

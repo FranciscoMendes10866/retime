@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 
 import { db } from "~/db/client";
 import { follows } from "~/db/schema";
+import { createFollowNotification } from "~/services/notification.server";
 
 export const followInsertSchema = createInsertSchema(follows);
 
@@ -32,6 +33,11 @@ export async function followEntryHandler(datums: FollowEntryHandlerArgs) {
   if (rowId < 1 || typeof rowId !== "number") {
     throw Error("An error has occurred.");
   }
+
+  await createFollowNotification({
+    actorId: datums.followedId,
+    followerId: datums.followerId,
+  });
 
   return;
 }
