@@ -1,16 +1,13 @@
-import { Avatar, Button, Card, CardBody, CardHeader } from "@nextui-org/react";
-import { Link, useParams } from "@remix-run/react";
-import { ArrowUpRight } from "lucide-react";
+import { Avatar, Card, CardBody, CardHeader } from "@nextui-org/react";
+import type { ReactNode } from "react";
 
 interface Props {
   username: string;
   body: string;
-  threadId: number;
+  action: ReactNode;
 }
 
-export default function ThreadItem({ username, body, threadId }: Props) {
-  const { userId = "" } = useParams();
-
+export default function ThreadItem({ username, body, action }: Props) {
   return (
     <Card className="w-full border-b" shadow="none" radius="none">
       <CardHeader className="justify-between">
@@ -26,15 +23,7 @@ export default function ThreadItem({ username, body, threadId }: Props) {
               </h5>
             </div>
           </div>
-          <Button
-            isIconOnly
-            color="primary"
-            variant="light"
-            as={Link}
-            to={`/main/${userId}/thread/${threadId}`}
-          >
-            <ArrowUpRight size={16} />
-          </Button>
+          {action}
         </div>
       </CardHeader>
       <CardBody className="px-3 mb-6 text-small text-default-400">

@@ -49,3 +49,18 @@ export async function createNewThread(data: CreateNewThreadArgs) {
 
   return;
 }
+
+export async function getThreadById(threadId: number) {
+  return await db.query.threads.findFirst({
+    where: (thread, { eq }) => eq(thread.id, threadId),
+    with: {
+      user: true,
+      replies: {
+        orderBy: (column, { desc }) => desc(column.createdAt),
+        with: {
+          user: true,
+        },
+      },
+    },
+  });
+}

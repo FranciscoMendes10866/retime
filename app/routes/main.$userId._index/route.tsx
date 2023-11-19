@@ -1,12 +1,13 @@
-import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import { Form, useActionData, useLoaderData, Link } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { Button, Textarea } from "@nextui-org/react";
+import { ArrowUpRight } from "lucide-react";
+import { Button, Textarea, Tooltip } from "@nextui-org/react";
 import { useForm } from "@conform-to/react";
 import { parse } from "@conform-to/zod";
 import { json } from "@remix-run/node";
 import { z } from "zod";
 
-import ThreadItem from "./ThreadItem";
+import ThreadItem from "~/components/ThreadItem";
 
 import { createNewThread, getFeedThreads } from "~/services/thread.server";
 
@@ -40,7 +41,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 }
 
 export default function Page() {
-  const { threads } = useLoaderData<typeof loader>();
+  const { threads, userId } = useLoaderData<typeof loader>();
   const lastSubmission = useActionData<typeof action>();
 
   const [formProps, fields] = useForm<FormValues>({
@@ -75,7 +76,19 @@ export default function Page() {
           key={thread.id}
           username={thread.user.username}
           body={thread.body}
-          threadId={thread.id}
+          action={
+            <Tooltip content="See topic in detail">
+              <Button
+                isIconOnly
+                color="primary"
+                variant="light"
+                as={Link}
+                to={`/main/${userId}/thread/${thread.id}`}
+              >
+                <ArrowUpRight size={16} />
+              </Button>
+            </Tooltip>
+          }
         />
       ))}
     </>

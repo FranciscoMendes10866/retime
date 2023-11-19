@@ -1,11 +1,5 @@
 import { relations } from "drizzle-orm";
-import {
-  sqliteTable,
-  integer,
-  text,
-  index,
-  type AnySQLiteColumn,
-} from "drizzle-orm/sqlite-core";
+import { sqliteTable, integer, text, index } from "drizzle-orm/sqlite-core";
 
 /**
  * Table Definitions
@@ -22,6 +16,7 @@ export const notifications = sqliteTable(
     id: integer("id").primaryKey({ autoIncrement: true }),
     createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
     readAt: integer("read_at", { mode: "timestamp" }),
+    message: text("message").notNull(),
     actorId: integer("actor_id")
       .notNull()
       .references(() => users.id),
@@ -74,9 +69,6 @@ export const replies = sqliteTable("replies", {
   threadId: integer("thread_id")
     .notNull()
     .references(() => threads.id),
-  toReplyId: integer("to_reply_id").references(
-    (): AnySQLiteColumn => replies.id
-  ),
 });
 
 /**
@@ -121,8 +113,8 @@ export const replyRelations = relations(replies, ({ one }) => ({
     fields: [replies.threadId],
     references: [threads.id],
   }),
-  reply: one(replies, {
-    fields: [replies.toReplyId],
-    references: [replies.id],
+  user: one(users, {
+    fields: [replies.userId],
+    references: [users.id],
   }),
 }));
