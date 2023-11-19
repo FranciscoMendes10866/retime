@@ -6,7 +6,7 @@ import { parse } from "@conform-to/zod";
 import { z } from "zod";
 import { Button, Input } from "@nextui-org/react";
 
-import { createAccount } from "~/services/user.server";
+import { createAccount } from "./account-service.server";
 
 export const meta: MetaFunction = () => [
   { title: "retime" },

@@ -4,11 +4,12 @@ import { Outlet } from "@remix-run/react";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const userId = params["userId"];
-  if (!userId) return redirect("/account");
+  const threadId = params["threadId"];
+  if (!threadId) return redirect(`/main/${userId}`);
   return null;
 }
 
-export default function Layout() {
+export default function ThreadLayout() {
   return (
     <div>
       <Outlet />

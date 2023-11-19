@@ -1,7 +1,7 @@
 import { Avatar, Button } from "@nextui-org/react";
 import { useFetcher, useParams } from "@remix-run/react";
 
-import type { User } from "~/services/user.server";
+import type { User } from "../account/account-service.server";
 
 interface Props {
   recomendations?: Array<User>;
