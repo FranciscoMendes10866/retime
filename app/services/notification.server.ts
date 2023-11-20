@@ -1,14 +1,18 @@
+import { z } from "zod";
+
 import { db } from "~/db/client";
 import { notifications } from "~/db/schema";
 import { pusherServer } from "~/utils/pusher.server";
 
-export interface NamespaceRecord {
-  actorId: number;
-  metadata: {
-    type: "follow" | "comment";
-    subjectId: number;
-  };
-}
+export const namespaceRecordSchema = z.object({
+  actorId: z.number().positive(),
+  metadata: z.object({
+    type: z.union([z.literal("follow"), z.literal("comment")]),
+    subjectId: z.number().positive(),
+  }),
+});
+
+export type NamespaceRecord = z.infer<typeof namespaceRecordSchema>;
 
 interface CreateCommentNotificationArgs {
   actorId: number;
@@ -19,10 +23,12 @@ export async function createCommentNotification({
   actorId,
   threadId,
 }: CreateCommentNotificationArgs) {
-  const namespace = JSON.stringify({
+  const datums = await namespaceRecordSchema.parseAsync({
     actorId,
     metadata: { subjectId: threadId, type: "comment" },
-  } satisfies NamespaceRecord);
+  });
+
+  const namespace = JSON.stringify(datums);
 
   const result = await db.insert(notifications).values({
     actorId,
@@ -48,10 +54,12 @@ export async function createFollowNotification({
   actorId,
   followerId,
 }: CreateFollowNotificationArgs) {
-  const namespace = JSON.stringify({
+  const datums = await namespaceRecordSchema.parseAsync({
     actorId,
     metadata: { subjectId: followerId, type: "follow" },
-  } satisfies NamespaceRecord);
+  });
+
+  const namespace = JSON.stringify(datums);
 
   const result = await db.insert(notifications).values({
     actorId,
