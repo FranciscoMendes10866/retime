@@ -67,3 +67,31 @@ export async function createFollowNotification({
     );
   }
 }
+
+export async function getRecentActivity(userId: number) {
+  return await db.query.notifications.findMany({
+    where: (notification, { eq }) => eq(notification.actorId, userId),
+    orderBy: (column, { desc }) => desc(column.createdAt),
+    limit: 20,
+  });
+}
+
+export async function markAllAsRead(ids: Array<number>) {
+  const list = await db.query.notifications.findMany({
+    where: (notification, { inArray }) => inArray(notification.id, ids),
+  });
+
+  const values = list.filter((item) => item.readAt !== null);
+
+  const result = await db
+    .insert(notifications)
+    .values(values)
+    .onConflictDoUpdate({
+      target: notifications.id,
+      set: { readAt: new Date() },
+    });
+
+  if (result.changes !== values.length) {
+    throw new Error();
+  }
+}
