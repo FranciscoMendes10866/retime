@@ -56,12 +56,12 @@ export default function RecentActivity({ userId }: Props) {
   );
 }
 
-interface ItemProps {
+interface ActivityItemProps {
   activity: Notification;
   userId: number;
 }
 
-function ActivityItem({ activity, userId }: ItemProps) {
+function ActivityItem({ activity, userId }: ActivityItemProps) {
   const datum = useMemo(() => {
     try {
       return JSON.parse(activity.namespace) as NotificationNamespace;
