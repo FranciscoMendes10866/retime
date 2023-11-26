@@ -73,7 +73,7 @@ export default function Page() {
 
       {threads.map((thread) => (
         <ThreadItem
-          key={thread.id}
+          key={`thread-#${thread.id}`}
           username={thread.user.username}
           body={thread.body}
           action={

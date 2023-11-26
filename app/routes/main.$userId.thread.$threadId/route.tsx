@@ -87,7 +87,7 @@ export default function Page() {
       <div className="space-y-2">
         {thread?.replies.map((reply) => (
           <div
-            key={reply.id}
+            key={`reply-#${reply.id}`}
             className="py-4 border-b border-b-gray-100 flex items-center justify-between"
           >
             <div className="flex items-center space-x-2">

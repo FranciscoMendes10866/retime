@@ -15,7 +15,6 @@ export const notifications = sqliteTable(
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
     createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-    readAt: integer("read_at", { mode: "timestamp" }),
     namespace: text("namespace").notNull(),
     actorId: integer("actor_id")
       .notNull()

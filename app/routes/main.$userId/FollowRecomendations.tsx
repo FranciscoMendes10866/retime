@@ -16,7 +16,7 @@ export default function FollowRecomendations({ recomendations }: Props) {
       <div className="mx-6 px-2 border-2 border-dashed border-gray-200 rounded-xl max-h-86 overflow-y-auto">
         <div className="flex flex-col py-2 space-y-2">
           {recomendations?.map((item) => (
-            <RecomendationItem key={item.id} item={item} />
+            <RecomendationItem key={`recommendation-#${item.id}`} item={item} />
           ))}
         </div>
       </div>

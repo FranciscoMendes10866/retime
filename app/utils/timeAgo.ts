@@ -9,7 +9,8 @@ export function timeAgo(date: string): string {
   const days = Math.floor(hours / 24);
 
   if (seconds < 60) {
-    return seconds + " seconds ago";
+    const isNow = seconds < 10;
+    return isNow ? "Just now" : seconds + " seconds ago";
   } else if (minutes < 60) {
     return minutes + " minutes ago";
   } else if (hours < 24) {
